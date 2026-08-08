@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #121214;
@@ -946,7 +947,7 @@
     <header>
         <div class="header-container">
             <a href="#" class="brand-logo" onclick="switchPage('shop')">
-                Palva<span>Novs</span>
+                STYLE<span>VIBE</span>
             </a>
             <nav>
                 <div class="lang-dropdown" id="lang-dropdown">
@@ -1223,7 +1224,7 @@
     <div class="toast" id="toast">Amal muvaffaqiyatli bajarildi</div>
 
     <footer data-i18n="footer_rights">
-        &copy; 2026 PalvaNovs Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.
+        &copy; 2026 StyleVibe Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.
     </footer>
 
     <script>
@@ -1276,7 +1277,7 @@
                 toast_updated: "Mahsulot muvaffaqiyatli yangilandi!",
                 toast_added: "Yangi mahsulot qo'shildi!",
                 toast_deleted: "Mahsulot o'chirildi.",
-                footer_rights: "© 2026 PalvaNovs Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.",
+                footer_rights: "© 2026 StyleVibe Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.",
                 img_count: (count) => `(${count} rasm)`
             },
             ru: {
@@ -1326,7 +1327,7 @@
                 toast_updated: "Товар успешно обновлен!",
                 toast_added: "Новый товар добавлен!",
                 toast_deleted: "Товар удален.",
-                footer_rights: "© 2026 PalvaNovs Люксовый Каталог и Управление. Все права защищены.",
+                footer_rights: "© 2026 StyleVibe Люксовый Каталог и Управление. Все права защищены.",
                 img_count: (count) => `(${count} фото)`
             },
             en: {
@@ -1376,7 +1377,7 @@
                 toast_updated: "Product updated successfully!",
                 toast_added: "New product added successfully!",
                 toast_deleted: "Product deleted.",
-                footer_rights: "© 2026 PalvaNovs Luxury Catalog & Management. All rights reserved.",
+                footer_rights: "© 2026 StyleVibe Luxury Catalog & Management. All rights reserved.",
                 img_count: (count) => `(${count} ${count === 1 ? 'photo' : 'photos'})`
             }
         };
@@ -1515,6 +1516,88 @@
         ];
 
         // Storage helpers
+        const SUPABASE_URL = "https://vozsqyngdwhrsdobcutq.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_UGd86ZzMWFDmMj_bOwNKPg_b8MggbkB";
+
+        const supabaseHeaders = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+        };
+
+        // Fetch products from Supabase cloud database
+        async function fetchSupabaseProducts() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
+                    method: "GET",
+                    headers: supabaseHeaders
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        products = data.map(item => ({
+                            id: String(item.id),
+                            title: item.title || "",
+                            price: Number(item.price) || 0,
+                            imgs: Array.isArray(item.imgs) ? item.imgs : (typeof item.imgs === 'string' ? JSON.parse(item.imgs) : [])
+                        }));
+                        saveProducts();
+                        renderProducts();
+                        const adminPage = document.getElementById('page-admin');
+                        if (adminPage && adminPage.classList.contains('active')) {
+                            renderAdminTable();
+                        }
+                    } else if (Array.isArray(data) && data.length === 0 && products.length > 0) {
+                        for (const p of products) {
+                            await upsertSupabaseProduct(p);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("Supabase fetch error, using local data fallback:", err);
+            }
+        }
+
+        // Upsert product into Supabase cloud database
+        async function upsertSupabaseProduct(prod) {
+            try {
+                const payload = {
+                    id: String(prod.id),
+                    title: prod.title,
+                    price: Number(prod.price),
+                    imgs: prod.imgs
+                };
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+                    method: "POST",
+                    headers: {
+                        ...supabaseHeaders,
+                        "Prefer": "resolution=merge-duplicates,return=minimal"
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    console.warn("Supabase upsert status:", res.status, await res.text());
+                }
+            } catch (err) {
+                console.error("Supabase upsert error:", err);
+            }
+        }
+
+        // Delete product from Supabase cloud database
+        async function deleteSupabaseProduct(id) {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(id)}`, {
+                    method: "DELETE",
+                    headers: supabaseHeaders
+                });
+                if (!res.ok) {
+                    console.warn("Supabase delete status:", res.status, await res.text());
+                }
+            } catch (err) {
+                console.error("Supabase delete error:", err);
+            }
+        }
+
         function loadProducts() {
             try {
                 const saved = localStorage.getItem("stylevibe_products");
@@ -1836,6 +1919,7 @@
                 const idx = products.findIndex(p => p.id === id);
                 if(idx !== -1) {
                     products[idx] = { id, title, price, imgs };
+                    upsertSupabaseProduct(products[idx]);
                     showToast(translations[currentLang].toast_updated);
                 }
             } else {
@@ -1847,6 +1931,7 @@
                     imgs
                 };
                 products.push(newProd);
+                upsertSupabaseProduct(newProd);
                 showToast(translations[currentLang].toast_added);
             }
 
@@ -1905,6 +1990,7 @@
 
         function confirmDeleteProduct() {
             if (productToDeleteId) {
+                deleteSupabaseProduct(productToDeleteId);
                 products = products.filter(p => p.id !== productToDeleteId);
                 saveProducts();
                 renderAdminTable();
@@ -1951,8 +2037,24 @@
             }
         });
 
+        // Real-time synchronization across browser tabs
+        window.addEventListener("storage", function(e) {
+            if (e.key === "stylevibe_products") {
+                products = loadProducts();
+                renderProducts();
+                const adminPage = document.getElementById('page-admin');
+                if (adminPage && adminPage.classList.contains('active')) {
+                    renderAdminTable();
+                }
+            }
+        });
+
         // Init - default to Uzbek language
         setLanguage('uz');
+
+        // Fetch products from Supabase Cloud on load & poll every 10 seconds for real-time updates across all users
+        fetchSupabaseProducts();
+        setInterval(fetchSupabaseProducts, 10000);
     </script>
 </body>
 </html>
