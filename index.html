@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PalvaNovs — Lyuks Katalog va Admin Paneli</title>
+    <title>StyleVibe — Lyuks Katalog va Admin Paneli</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
@@ -947,7 +947,7 @@
     <header>
         <div class="header-container">
             <a href="#" class="brand-logo" onclick="switchPage('shop')">
-                Palva<span>Novs</span>
+                STYLE<span>VIBE</span>
             </a>
             <nav>
                 <div class="lang-dropdown" id="lang-dropdown">
@@ -1224,7 +1224,7 @@
     <div class="toast" id="toast">Amal muvaffaqiyatli bajarildi</div>
 
     <footer data-i18n="footer_rights">
-        &copy; 2026 PalvaNovs Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.
+        &copy; 2026 StyleVibe Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.
     </footer>
 
     <script>
@@ -1277,7 +1277,7 @@
                 toast_updated: "Mahsulot muvaffaqiyatli yangilandi!",
                 toast_added: "Yangi mahsulot qo'shildi!",
                 toast_deleted: "Mahsulot o'chirildi.",
-                footer_rights: "© 2026 PalvaNovs Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.",
+                footer_rights: "© 2026 StyleVibe Hashamatli Katalog va Boshqaruv. Barcha huquqlar himoyalangan.",
                 img_count: (count) => `(${count} rasm)`
             },
             ru: {
@@ -1327,7 +1327,7 @@
                 toast_updated: "Товар успешно обновлен!",
                 toast_added: "Новый товар добавлен!",
                 toast_deleted: "Товар удален.",
-                footer_rights: "© 2026 PalvaNovs Люксовый Каталог и Управление. Все права защищены.",
+                footer_rights: "© 2026 StyleVibe Люксовый Каталог и Управление. Все права защищены.",
                 img_count: (count) => `(${count} фото)`
             },
             en: {
@@ -1377,7 +1377,7 @@
                 toast_updated: "Product updated successfully!",
                 toast_added: "New product added successfully!",
                 toast_deleted: "Product deleted.",
-                footer_rights: "© 2026 PalvaNovs Luxury Catalog & Management. All rights reserved.",
+                footer_rights: "© 2026 StyleVibe Luxury Catalog & Management. All rights reserved.",
                 img_count: (count) => `(${count} ${count === 1 ? 'photo' : 'photos'})`
             }
         };
@@ -1463,57 +1463,8 @@
             return num.toLocaleString('ru-RU').replace(/,/g, ' ') + " " + curr;
         }
 
-        // Initial Default Products List (in Uzbek So'm)
-        const defaultProducts = [
-            { 
-                id: "p1", 
-                title: "Monogrammali baxmal pijak", 
-                price: 3500000, 
-                imgs: [
-                    "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=600&q=80"
-                ] 
-            },
-            { 
-                id: "p2", 
-                title: "Ipak krep de shin bluzka", 
-                price: 1750000, 
-                imgs: [
-                    "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=600&q=80"
-                ] 
-            },
-            { 
-                id: "p3", 
-                title: "Keng bichimli klassik shim", 
-                price: 2150000, 
-                imgs: [
-                    "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=600&q=80"
-                ] 
-            },
-            { 
-                id: "p4", 
-                title: "Kashmir toqima sviter", 
-                price: 2500000, 
-                imgs: [
-                    "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=600&q=80"
-                ] 
-            },
-            { 
-                id: "p5", 
-                title: "Ikki qator tugmali klassik trench", 
-                price: 4100000, 
-                imgs: [
-                    "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80"
-                ] 
-            }
-        ];
+        // Initial Default Products List
+        const defaultProducts = [];
 
         // Storage helpers
         const SUPABASE_URL = "https://vozsqyngdwhrsdobcutq.supabase.co";
@@ -1534,7 +1485,7 @@
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (Array.isArray(data) && data.length > 0) {
+                    if (Array.isArray(data)) {
                         products = data.map(item => ({
                             id: String(item.id),
                             title: item.title || "",
@@ -1546,10 +1497,6 @@
                         const adminPage = document.getElementById('page-admin');
                         if (adminPage && adminPage.classList.contains('active')) {
                             renderAdminTable();
-                        }
-                    } else if (Array.isArray(data) && data.length === 0 && products.length > 0) {
-                        for (const p of products) {
-                            await upsertSupabaseProduct(p);
                         }
                     }
                 }
@@ -1601,9 +1548,9 @@
         function loadProducts() {
             try {
                 const saved = localStorage.getItem("stylevibe_products");
-                if (saved) {
+                if (saved !== null) {
                     const parsed = JSON.parse(saved);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
+                    if (Array.isArray(parsed)) {
                         return parsed.map(p => {
                             if (p.price < 10000) p.price = Math.round(p.price * 12500);
                             return p;
@@ -1613,7 +1560,7 @@
             } catch (e) {
                 console.error("localStorage error:", e);
             }
-            return [...defaultProducts];
+            return [];
         }
 
         function saveProducts() {
