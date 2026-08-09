@@ -1507,7 +1507,13 @@
                     if (Array.isArray(data)) {
                         const deletedIds = getDeletedProductIds();
                         products = data
-                            .filter(item => !deletedIds.includes(String(item.id)))
+                            .filter(item => {
+                                if (deletedIds.includes(String(item.id))) return false;
+                                if (item.is_deleted === true || item.is_deleted === "true") return false;
+                                if (item.title === "__DELETED__" || (item.title && item.title.startsWith("__DELETED__"))) return false;
+                                if (Number(item.price) < 0) return false;
+                                return true;
+                            })
                             .map(item => ({
                                 id: String(item.id),
                                 title: item.title || "",
@@ -1555,13 +1561,32 @@
         // Delete product from Supabase cloud database
         async function deleteSupabaseProduct(id) {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(id)}`, {
+                // 1. Send direct DELETE query to Supabase
+                await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(id)}`, {
                     method: "DELETE",
                     headers: supabaseHeaders
                 });
-                if (!res.ok) {
-                    console.warn("Supabase delete status:", res.status, await res.text());
-                }
+
+                // 2. Also update database record to mark as deleted, guaranteeing it is hidden on ALL clients even if RLS blocks DELETE method
+                const payload = {
+                    id: String(id),
+                    title: "__DELETED__",
+                    price: -1,
+                    imgs: []
+                };
+                await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(id)}`, {
+                    method: "PATCH",
+                    headers: supabaseHeaders,
+                    body: JSON.stringify(payload)
+                });
+                await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+                    method: "POST",
+                    headers: {
+                        ...supabaseHeaders,
+                        "Prefer": "resolution=merge-duplicates,return=minimal"
+                    },
+                    body: JSON.stringify(payload)
+                });
             } catch (err) {
                 console.error("Supabase delete error:", err);
             }
@@ -1575,9 +1600,15 @@
                     const parsed = JSON.parse(saved);
                     if (Array.isArray(parsed)) {
                         return parsed
-                            .filter(p => !deletedIds.includes(String(p.id)))
+                            .filter(p => {
+                                if (deletedIds.includes(String(p.id))) return false;
+                                if (p.is_deleted === true || p.is_deleted === "true") return false;
+                                if (p.title === "__DELETED__" || (p.title && p.title.startsWith("__DELETED__"))) return false;
+                                if (Number(p.price) < 0) return false;
+                                return true;
+                            })
                             .map(p => {
-                                if (p.price < 10000) p.price = Math.round(p.price * 12500);
+                                if (p.price < 10000 && p.price > 0) p.price = Math.round(p.price * 12500);
                                 return p;
                             });
                     }
@@ -1897,7 +1928,7 @@
             } else {
                 // Add new
                 const newProd = {
-                    id: "p_" + Date.now(),
+                    id: String(Date.now()),
                     title,
                     price,
                     imgs
