@@ -1476,6 +1476,25 @@
             "Content-Type": "application/json"
         };
 
+        function getDeletedProductIds() {
+            try {
+                const saved = localStorage.getItem("stylevibe_deleted_ids");
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function addDeletedProductId(id) {
+            try {
+                const list = getDeletedProductIds();
+                if (!list.includes(String(id))) {
+                    list.push(String(id));
+                    localStorage.setItem("stylevibe_deleted_ids", JSON.stringify(list));
+                }
+            } catch (e) {}
+        }
+
         // Fetch products from Supabase cloud database
         async function fetchSupabaseProducts() {
             try {
@@ -1486,12 +1505,15 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (Array.isArray(data)) {
-                        products = data.map(item => ({
-                            id: String(item.id),
-                            title: item.title || "",
-                            price: Number(item.price) || 0,
-                            imgs: Array.isArray(item.imgs) ? item.imgs : (typeof item.imgs === 'string' ? JSON.parse(item.imgs) : [])
-                        }));
+                        const deletedIds = getDeletedProductIds();
+                        products = data
+                            .filter(item => !deletedIds.includes(String(item.id)))
+                            .map(item => ({
+                                id: String(item.id),
+                                title: item.title || "",
+                                price: Number(item.price) || 0,
+                                imgs: Array.isArray(item.imgs) ? item.imgs : (typeof item.imgs === 'string' ? JSON.parse(item.imgs) : [])
+                            }));
                         saveProducts();
                         renderProducts();
                         const adminPage = document.getElementById('page-admin');
@@ -1548,13 +1570,16 @@
         function loadProducts() {
             try {
                 const saved = localStorage.getItem("stylevibe_products");
+                const deletedIds = getDeletedProductIds();
                 if (saved !== null) {
                     const parsed = JSON.parse(saved);
                     if (Array.isArray(parsed)) {
-                        return parsed.map(p => {
-                            if (p.price < 10000) p.price = Math.round(p.price * 12500);
-                            return p;
-                        });
+                        return parsed
+                            .filter(p => !deletedIds.includes(String(p.id)))
+                            .map(p => {
+                                if (p.price < 10000) p.price = Math.round(p.price * 12500);
+                                return p;
+                            });
                     }
                 }
             } catch (e) {
@@ -1935,14 +1960,16 @@
             document.getElementById("delete-modal").classList.remove("active");
         }
 
-        function confirmDeleteProduct() {
+        async function confirmDeleteProduct() {
             if (productToDeleteId) {
-                deleteSupabaseProduct(productToDeleteId);
-                products = products.filter(p => p.id !== productToDeleteId);
+                const idToDelete = productToDeleteId;
+                addDeletedProductId(idToDelete);
+                products = products.filter(p => p.id !== idToDelete);
                 saveProducts();
                 renderAdminTable();
                 renderProducts();
                 showToast(translations[currentLang].toast_deleted);
+                await deleteSupabaseProduct(idToDelete);
             }
             closeDeleteModal();
         }
